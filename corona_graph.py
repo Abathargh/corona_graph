@@ -29,10 +29,12 @@ import matplotlib.pyplot as plt
 import subprocess
 import datetime
 import argparse
-import logging
 import pathlib
-import sys
+import random
+import string
 import json
+import sys
+
 
 repo_name = "COVID-19"
 description = "Plot generator for COVID-19 data by the Italian Department of Civil Protection; day_0 = 24/02/2020."
@@ -41,6 +43,7 @@ reg_help = "Name(s) of one or more region to plot. By default " \
 date_help = "Plot graph(s) up to the passed date; date in the y-m-d format."
 last_help = "Plot graph(s) using the last n data samples (using data from the [today -n; today] interval) with " \
             "0 <= n <= # days form day_0"
+save_help = "Saves the img instead of plotting it"
 
 gen_err = "You have one of the following problems:\n\t-The passed file does not exist\n\t-You don't have git " \
           "installed on this machine"
@@ -58,14 +61,14 @@ regioni = ["Lombardia", "Lazio", "Campania", "Sicilia", "Veneto",
 def clone_repo():
     clone = subprocess.run(["git", "clone", "https://github.com/pcm-dpc/COVID-19"])
     if clone.returncode != 0:
-        logging.error(git_err)
+        print(git_err)
         sys.exit(clone.returncode)
 
 
 def pull_repo():
     pull = subprocess.run(["git", "pull"], cwd="COVID-19")
     if pull.returncode != 0:
-        logging.error(git_err)
+        print(git_err)
         sys.exit(pull.returncode)
 
 
@@ -79,6 +82,10 @@ def is_data(data):
     except ValueError:
         return False
     return True
+
+
+def random_img_name():
+    return "".join([random.choice(string.ascii_lowercase + string.digits + string.ascii_uppercase) for _ in range(10)])
 
 
 def sub_data(d1, d2):
@@ -95,6 +102,7 @@ parser = argparse.ArgumentParser(description)
 parser.add_argument("--regione", "-r", type=str, nargs="+", help=reg_help, default=regioni)
 parser.add_argument("--data", "-d", type=str, help=date_help, default=today)
 parser.add_argument("--last", "-l", type=int, help=last_help)
+parser.add_argument("--save", "-s", action="store_true", help=save_help)
 args = parser.parse_args()
 
 try:
@@ -140,4 +148,7 @@ except ValueError as ve:
 else:
     plt.grid(linestyle='-', linewidth=2)
     plt.legend()
-    plt.show()
+    if args.save:
+        plt.savefig(f"./imgs/{random_img_name()}.png")
+    else:
+        plt.show()
