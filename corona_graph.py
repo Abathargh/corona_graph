@@ -26,30 +26,25 @@ For more information, please refer to <http://unlicense.org/>
 """
 
 import matplotlib.pyplot as plt
-import subprocess
-import datetime
+from utils import *
 import argparse
-import pathlib
-import random
-import string
 import json
 import sys
 
 
-repo_name = "COVID-19"
+# Argparse descriptions and error messages
+
 description = "Plot generator for COVID-19 data by the Italian Department of Civil Protection; day_0 = 24/02/2020."
 reg_help = "Name(s) of one or more region to plot. By default " \
            "data from every region is plotted."
 date_help = "Plot graph(s) up to the passed date; date in the y-m-d format."
 last_help = "Plot graph(s) using the last n data samples (using data from the [today -n; today] interval) with " \
             "0 <= n <= # days form day_0"
-save_help = "Saves the img instead of plotting it"
+save_help = "Saves the img instead of opening it in a window"
+force_help = "Forces a fresh download of the data"
 
-gen_err = "You have one of the following problems:\n\t-The passed file does not exist\n\t-You don't have git " \
-          "installed on this machine"
 
-git_err = "Couldn't download the repository with the data from Protezione Civile! You need to install git and to " \
-            "have an internet connection"
+# Static region data
 
 regioni = ["Lombardia", "Lazio", "Campania", "Sicilia", "Veneto",
            "Emilia Romagna", "Abbruzzo", "Basilicata", "P.A. Bolzano",
@@ -58,59 +53,22 @@ regioni = ["Lombardia", "Lazio", "Campania", "Sicilia", "Veneto",
            "Valle d'Aosta"]
 
 
-def clone_repo():
-    clone = subprocess.run(["git", "clone", "https://github.com/pcm-dpc/COVID-19"])
-    if clone.returncode != 0:
-        print(git_err)
-        sys.exit(clone.returncode)
-
-
-def pull_repo():
-    pull = subprocess.run(["git", "pull"], cwd="COVID-19")
-    if pull.returncode != 0:
-        print(git_err)
-        sys.exit(pull.returncode)
-
-
-def get_data(data):
-    return data[0:data.index("T")]
-
-
-def is_data(data):
-    try:
-        datetime.datetime.strptime(data, "%Y-%m-%d")
-    except ValueError:
-        return False
-    return True
-
-
-def random_img_name():
-    return "".join([random.choice(string.ascii_lowercase + string.digits + string.ascii_uppercase) for _ in range(10)])
-
-
-def sub_data(d1, d2):
-    y1, m1, d1 = [int(e) for e in d1.split("-")]
-    y2, m2, d2 = [int(e) for e in d2.split("-")]
-    return (datetime.date(y1, m1, d1) - datetime.date(y2, m2, d2)).days
-
-
-def_file = pathlib.Path("COVID-19", "dati-json", "dpc-covid19-ita-regioni.json")
-day_0 = datetime.date(2020, 2, 24).strftime("%Y-%m-%d")
-today = datetime.datetime.now().strftime("%Y-%m-%d")
+# Argparse settings
 
 parser = argparse.ArgumentParser(description)
 parser.add_argument("--regione", "-r", type=str, nargs="+", help=reg_help, default=regioni)
 parser.add_argument("--data", "-d", type=str, help=date_help, default=today)
 parser.add_argument("--last", "-l", type=int, help=last_help)
 parser.add_argument("--save", "-s", action="store_true", help=save_help)
-args = parser.parse_args()
+parser.add_argument("--force", "-f", action="store_true", help=force_help)
 
-try:
-    if not pathlib.Path(repo_name).exists():
-        clone_repo()
-    pull_repo()
 
-    with open(def_file, "r") as file:
+def main():
+    args = parser.parse_args()
+    if not file_path.exists() or is_cache_old() or args.force:
+        update_data()
+
+    with open(file_path, "r") as file:
         dati = json.loads(file.read())
 
     if not is_data(args.data) or sub_data(args.data, day_0) < 0 or sub_data(today, args.data) < 0:
@@ -135,20 +93,12 @@ try:
                   and get_data(d["data"]) < args.data][max_last-args.last:]
         plt.plot(casi_c, label=regione)
 
-except NotADirectoryError as err:
-    parser.print_help()
-    print("Can't find the COVID-19 directory")
-except FileNotFoundError:
-    parser.print_help()
-    print(gen_err)
-except ValueError as ve:
-    parser.print_help()
-    print(gen_err)
-    print("You have a typo in your date")
-else:
-    plt.grid(linestyle='-', linewidth=2)
+    plt.grid(linestyle="-", linewidth=2)
     plt.legend()
     if args.save:
-        plt.savefig(f"./imgs/{random_img_name()}.png")
-    else:
+        plt.savefig(random_img_name())
         plt.show()
+
+
+if __name__ == "__main__":
+    main()

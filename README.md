@@ -9,9 +9,11 @@ A simple script that plots the number of italian Covid-19 cases by region based 
     
 ### Utilizzo/Usage
 
-Per utilizzare lo script è necessario avere installato git e matplotlib.
+Per utilizzare lo script è necessario avere installato curl e matplotlib. I dati e le immagini generate sono salvate 
+nella cartella ~/.corona_graph.
 
-To use the script you need to have git and matplotlib.
+To use the script you need to have curl and matplotlib installed on your machine. The downloaded data and the images 
+generated via this script are saved inside the ~/.corona_graph directory.
 
 ```bash
 pip3 install -r requirements.txt
@@ -26,21 +28,22 @@ images inside a volume.
 
 ```bash
 docker build -t corona-graph .
-docker run --rm -v $(pwd)/imgs:/app/imgs -it corona-graph bash 
+docker run --rm -v /path/to/imgs:/app/imgs -it corona-graph bash 
 
 python corona_graph.py -s
 ```
 
---help
 
 ```bash
-usage: Plot generator for COVID-19 data by the Italian Department of Civil Protection; day_0 = 24/02/2020.
-                     [-h] [--regione REGIONE [REGIONE ...]] [--data DATA] [--last LAST]                                                                                                                                                                       
+usage: Plot generator for COVID-19 data by the Italian Department of Civil Protection; day_0 = 24/02/2020.                     
+       [-h] [--regione REGIONE [REGIONE ...]] [--data DATA] [--last LAST] [--save] [--force]                                                                                                                                                    
 optional arguments:                                                                                                       
     -h, --help            show this help message and exit                                                                   
     --regione REGIONE [REGIONE ...], -r REGIONE [REGIONE ...]                                                                                     
-                        Name(s) of one or more region to plot. By default data from every region is plotted.              
+                          Name(s) of one or more region to plot. By default data from every region is plotted.              
     --data DATA, -d DATA  Plot graph(s) up to the passed date; date in the y-m-d format.                                    
-    --last LAST, -l LAST  Plot graph(s) using the last n data samples (using data from the [today -n; today] interval)
-                        with 0 <= n <= # days form day_0 
-    --save, -s            Saves the img instead of plotting it
+    --last LAST, -l LAST  Plot graph(s) using the last n data samples (using data from the [today -n; today] interval)                            
+                          with 0 <= n <= # days form day_0                                                                  
+    --save, -s            Saves the img instead of opening it in a window                                                   
+    --force, -f           Forces a fresh download of the data  
+```

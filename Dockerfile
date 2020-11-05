@@ -2,7 +2,7 @@ FROM python:3.8-slim-buster
 WORKDIR /app
 COPY . .
 
-RUN apt-get update && apt-get -y install git
+RUN apt-get update && apt-get -y install curl
 RUN pip install -r requirements.txt
 
 CMD [""]
