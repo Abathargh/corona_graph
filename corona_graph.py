@@ -96,9 +96,19 @@ def main():
     plt.grid(linestyle="-", linewidth=2)
     plt.legend()
     if args.save:
-        plt.savefig(random_img_name())
+        ri_name = random_img_name()
+        plt.savefig(ri_name)
+        print(f"Saved @ {ri_name}")
+    else:
         plt.show()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except FileNotFoundError as fne:
+        print(fne)
+        parser.print_help()
+    except ValueError as ve:
+        print(ve)
+        parser.print_help()
