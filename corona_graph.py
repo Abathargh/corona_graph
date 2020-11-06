@@ -40,6 +40,7 @@ reg_help = "Name(s) of one or more region to plot. By default " \
 date_help = "Plot graph(s) up to the passed date; date in the y-m-d format."
 last_help = "Plot graph(s) using the last n data samples (using data from the [today -n; today] interval) with " \
             "0 <= n <= # days form day_0"
+derivative_help = "Plots graph(s) of the rate of change of the growth(s)"
 save_help = "Saves the img instead of opening it in a window"
 force_help = "Forces a fresh download of the data"
 
@@ -59,6 +60,7 @@ parser = argparse.ArgumentParser(description)
 parser.add_argument("--regione", "-r", type=str, nargs="+", help=reg_help, default=regioni)
 parser.add_argument("--data", "-d", type=str, help=date_help, default=today)
 parser.add_argument("--last", "-l", type=int, help=last_help)
+parser.add_argument("--derivative", "-c", action="store_true", help=derivative_help)
 parser.add_argument("--save", "-s", action="store_true", help=save_help)
 parser.add_argument("--force", "-f", action="store_true", help=force_help)
 
@@ -91,7 +93,12 @@ def main():
         casi_c = [d["totale_casi"] for d in dati
                   if d["denominazione_regione"] == regione
                   and get_data(d["data"]) < args.data][max_last-args.last:]
-        plt.plot(casi_c, label=regione)
+        if args.derivative:
+            diff_casi = list_diff(casi_c)
+            dx = list_diff(list(range(0, len(casi_c))))
+            plt.plot(div_list(diff_casi, dx), label=f"d({regione})/dx")
+        else:
+            plt.plot(casi_c, label=regione)
 
     plt.grid(linestyle="-", linewidth=2)
     plt.legend()

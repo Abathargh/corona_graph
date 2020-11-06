@@ -43,7 +43,8 @@ optional arguments:
                           Name(s) of one or more region to plot. By default data from every region is plotted.              
     --data DATA, -d DATA  Plot graph(s) up to the passed date; date in the y-m-d format.                                    
     --last LAST, -l LAST  Plot graph(s) using the last n data samples (using data from the [today -n; today] interval)                            
-                          with 0 <= n <= # days form day_0                                                                  
+                          with 0 <= n <= # days form day_0   
+    --derivative, -c      Plots graph(s) of the rate of change of the growth(s)                                                               
     --save, -s            Saves the img instead of opening it in a window                                                   
     --force, -f           Forces a fresh download of the data  
 ```

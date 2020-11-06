@@ -92,3 +92,11 @@ def sub_data(d1: str, d2: str) -> int:
     y1, m1, d1 = [int(e) for e in d1.split("-")]
     y2, m2, d2 = [int(e) for e in d2.split("-")]
     return (datetime.date(y1, m1, d1) - datetime.date(y2, m2, d2)).days
+
+
+def list_diff(i_list: list) -> list:
+    return [i_list[idx+1] - elem for idx, elem in enumerate(i_list[0:-1])]
+
+
+def div_list(f_list: list, s_list: list) -> list:
+    return [f/s if s != 0 else 0 for f, s in zip(f_list, s_list) ]
