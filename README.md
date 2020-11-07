@@ -9,28 +9,30 @@ A simple script that plots the number of italian Covid-19 cases by region based 
     
 ### Utilizzo/Usage
 
-Per utilizzare lo script è necessario avere installato curl e matplotlib. I dati e le immagini generate sono salvate 
-nella cartella ~/.corona_graph.
-
-To use the script you need to have curl and matplotlib installed on your machine. The downloaded data and the images 
-generated via this script are saved inside the ~/.corona_graph directory.
-
 ```bash
 pip3 install -r requirements.txt
 python3 corona_graph.py 
 ```
 
+I dati e le immagini generate sono salvate nella cartella ~/.corona_graph.
+
 In alternativa, è possibile utilizzare un'immagine Docker. In questo caso è consigliabile eseguire lo script con il flag
  -s, per salvare le immagini in un volume.
+
+
+The downloaded data and the images generated via this script are saved inside the ~/.corona_graph directory.
 
 You could also use a Docker image. If you do, you may want to execute the script with the -s flag, in order to save the 
 images inside a volume.
 
 ```bash
 docker build -t corona-graph .
-docker run --rm -v /path/to/imgs:/app/imgs -it corona-graph bash 
 
+docker run --rm -v /path/to/imgs:/root/.corona_graph/imgs -it corona-graph bash 
 python corona_graph.py -s
+
+
+docker run --rm -v /path/to/imgs:/root/.corona_graph/imgs corona-graph python corona_graph.py -s
 ```
 
 

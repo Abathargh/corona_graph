@@ -25,13 +25,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 """
 
-import subprocess
+import requests
 import datetime
 import pathlib
 import random
 import string
 
-data_file = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json"
+endpoint = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json"
 file_name = "dati-regioni.json"
 last_name = "last_update"
 
@@ -64,9 +64,14 @@ def save_update() -> None:
 
 def update_data() -> None:
     data_folder.mkdir(parents=True, exist_ok=True)
-    curl = subprocess.run(["curl", data_file, "-o", file_name], cwd=data_folder)
-    if curl.returncode != 0:
+    req = requests.get(endpoint)
+
+    if req.status_code != 200:
         raise ValueError
+
+    with open(file_path, "w") as f:
+        f.write(req.text)
+
     save_update()
 
 
