@@ -26,8 +26,12 @@ For more information, please refer to <http://unlicense.org/>
 """
 
 import matplotlib.pyplot as plt
-from utils import *
 import argparse
+import requests
+import datetime
+import pathlib
+import random
+import string
 import json
 import sys
 
@@ -54,6 +58,22 @@ regioni = ["Lombardia", "Lazio", "Campania", "Sicilia", "Veneto",
            "Valle d'Aosta"]
 
 
+endpoint = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json"
+file_name = "dati-regioni.json"
+last_name = "last_update"
+
+
+# Important datatimes and data paths, by default everything is saved in ~/.corona_graph
+
+data_folder = pathlib.Path(pathlib.Path.home(), ".corona_graph")
+img_folder = pathlib.Path(pathlib.Path.home(), ".corona_graph", "imgs")
+file_path = pathlib.Path(data_folder, file_name)
+last_path = pathlib.Path(data_folder, last_name)
+
+day_0 = datetime.date(2020, 2, 24).strftime("%Y-%m-%d")
+today = datetime.datetime.now().strftime("%Y-%m-%d")
+
+
 # Argparse settings
 
 parser = argparse.ArgumentParser(description)
@@ -63,6 +83,66 @@ parser.add_argument("--last", "-l", type=int, help=last_help)
 parser.add_argument("--derivative", "-c", action="store_true", help=derivative_help)
 parser.add_argument("--save", "-s", action="store_true", help=save_help)
 parser.add_argument("--force", "-f", action="store_true", help=force_help)
+
+
+def is_cache_old() -> bool:
+    if not last_path.exists():
+        return False
+    with open(last_path, "r") as lp:
+        last_update = datetime.datetime(*[int(elem) for elem in lp.read().split("-")])
+        now = datetime.datetime.now()
+        return (now.date() > last_update.date()) or ((now.hour - last_update.hour) > 0)
+
+
+def save_update() -> None:
+    with open(last_path, "w") as lp:
+        now = datetime.datetime.now().strftime("%Y-%m-%d-%H")
+        lp.write(now)
+
+
+def update_data() -> None:
+    data_folder.mkdir(parents=True, exist_ok=True)
+    req = requests.get(endpoint)
+
+    if req.status_code != 200:
+        raise ValueError
+
+    with open(file_path, "w") as f:
+        f.write(req.text)
+
+    save_update()
+
+
+def get_data(data: str) -> str:
+    return data[0:data.index("T")]
+
+
+def is_data(data: str) -> bool:
+    try:
+        datetime.datetime.strptime(data, "%Y-%m-%d")
+    except ValueError:
+        return False
+    return True
+
+
+def random_img_name() -> str:
+    img_folder.mkdir(parents=True, exist_ok=True)
+    rand = "".join([random.choice(string.ascii_lowercase + string.digits + string.ascii_uppercase) for _ in range(10)])
+    return str(pathlib.Path(img_folder, f"{rand}.png"))
+
+
+def sub_data(d1: str, d2: str) -> int:
+    y1, m1, d1 = [int(e) for e in d1.split("-")]
+    y2, m2, d2 = [int(e) for e in d2.split("-")]
+    return (datetime.date(y1, m1, d1) - datetime.date(y2, m2, d2)).days
+
+
+def list_diff(i_list: list) -> list:
+    return [i_list[idx+1] - elem for idx, elem in enumerate(i_list[0:-1])]
+
+
+def div_list(f_list: list, s_list: list) -> list:
+    return [f/s if s != 0 else 0 for f, s in zip(f_list, s_list) ]
 
 
 def main():
