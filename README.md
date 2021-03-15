@@ -25,15 +25,6 @@ The downloaded data and the images generated via this script are saved inside th
 You could also use a Docker image. If you do, you may want to execute the script with the -s flag, in order to save the 
 images inside a volume.
 
-```bash
-docker build -t corona-graph .
-
-docker run --rm -v /path/to/imgs:/root/.corona_graph/imgs -it corona-graph bash 
-python corona_graph.py -s
-
-
-docker run --rm -v /path/to/imgs:/root/.corona_graph/imgs corona-graph python corona_graph.py -s
-```
 
 
 ```bash
